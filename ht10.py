@@ -15,11 +15,12 @@ class GrafoLogistica:
     def cambiar_clima(self, ciudad1, ciudad2, nuevo_clima):
         if (ciudad1, ciudad2) in self.matriz_adyacencia:
             tiempos = self.matriz_adyacencia[(ciudad1, ciudad2)]
-            self.matriz_adyacencia[(ciudad1, ciudad2)] = tiempos[:nuevo_clima] + (nuevo_clima,) + tiempos[nuevo_clima + 1:]
+            self.matriz_adyacencia[(ciudad1, ciudad2)] = (
+                    tiempos[:nuevo_clima] + (nuevo_clima,) + tiempos[nuevo_clima + 1:])
 
     def calcular_centro_del_grafo(self):
         distancias = self.floyd()
-        maximos = [max(distancias[ciudad].values()) for ciudad in self.vertices]
+        [max(distancias[ciudad].values()) for ciudad in self.vertices]
         centro = min(self.vertices, key=lambda ciudad: max(distancias[ciudad].values()))
         return centro
 
@@ -36,6 +37,7 @@ class GrafoLogistica:
                     distancias[v][u] = min(distancias[v][u], distancias[v][k] + distancias[k][u])
         return distancias
 
+
 class ProgramaLogistica:
     def __init__(self, grafo):
         self.grafo = grafo
@@ -48,12 +50,19 @@ class ProgramaLogistica:
             tiempos = tuple(map(int, datos[2:]))
             self.grafo.agregar_conexion(ciudad1, ciudad2, tiempos)
 
+    def cargar_grafo_desde_archivo(self, ruta_archivo):
+        with open(ruta_archivo, 'r') as archivo:
+            texto_grafo = archivo.read()
+            self.cargar_grafo_desde_texto(texto_grafo)
+
     def calcular_ruta_mas_corta(self, ciudad_origen, ciudad_destino):
         distancias = self.grafo.floyd()
         if ciudad_origen in distancias and ciudad_destino in distancias[ciudad_origen]:
             ruta = [ciudad_origen]
             while ruta[-1] != ciudad_destino:
-                siguiente_ciudad = min((ciudad for ciudad in self.grafo.vertices if ciudad != ruta[-1]), key=lambda ciudad: distancias[ruta[-1]][ciudad])
+                siguiente_ciudad = min((ciudad for ciudad in self.grafo.vertices if ciudad not in ruta),
+                                       key=lambda ciudad: distancias[ruta[-1]][ciudad] + distancias[ciudad][
+                                           ciudad_destino])
                 ruta.append(siguiente_ciudad)
             return ruta
         else:
@@ -77,6 +86,7 @@ class ProgramaLogistica:
                     fila.append("-")
             print(f"{v}: {' '.join(fila)}")
 
+
 if __name__ == "__main__":
     grafo = GrafoLogistica()
     programa = ProgramaLogistica(grafo)
@@ -86,7 +96,7 @@ BuenosAires,SaoPaulo,10,15,20,50
 BuenosAires,Lima,15,20,30,70
 Lima,Quito,10,12,15,20
 """
-    programa.cargar_grafo_desde_texto(texto_grafo)
+    programa.cargar_grafo_desde_archivo('grafo.txt')
     programa.mostrar_matriz_adyacencia()
     ciudad_origen = "BuenosAires"
     ciudad_destino = "Quito"
