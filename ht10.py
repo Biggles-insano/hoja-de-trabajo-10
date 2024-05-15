@@ -3,10 +3,10 @@ class GrafoLogistica:
         self.vertices = set()
         self.matriz_adyacencia = {}
 
-    def agregar_conexion(self, ciudad1, ciudad2, tiempo_normal, tiempo_lluvia, tiempo_nieve, tiempo_tormenta):
+    def agregar_conexion(self, ciudad1, ciudad2, tiempos):
         self.vertices.add(ciudad1)
         self.vertices.add(ciudad2)
-        self.matriz_adyacencia[(ciudad1, ciudad2)] = (tiempo_normal, tiempo_lluvia, tiempo_nieve, tiempo_tormenta)
+        self.matriz_adyacencia[(ciudad1, ciudad2)] = tiempos
 
     def quitar_conexion(self, ciudad1, ciudad2):
         if (ciudad1, ciudad2) in self.matriz_adyacencia:
@@ -42,11 +42,11 @@ class ProgramaLogistica:
 
     def cargar_grafo_desde_texto(self, texto_grafo):
         lineas = texto_grafo.strip().split('\n')
-        for linea in lineas:
+        for linea in lineas[1:]:  # Omitir la primera línea
             datos = linea.strip().split(',')
             ciudad1, ciudad2 = datos[0], datos[1]
             tiempos = tuple(map(int, datos[2:]))
-            self.grafo.agregar_conexion(ciudad1, ciudad2, *tiempos)
+            self.grafo.agregar_conexion(ciudad1, ciudad2, tiempos)
 
     def calcular_ruta_mas_corta(self, ciudad_origen, ciudad_destino):
         distancias = self.grafo.floyd()
@@ -67,27 +67,27 @@ class ProgramaLogistica:
     def mostrar_matriz_adyacencia(self):
         vertices = sorted(list(self.grafo.vertices))
         print("Matriz de adyacencia:")
-        print("   " + " ".join(vertices))
+        print(" " + " ".join(vertices))
         for v in vertices:
-            fila = [str(self.grafo.matriz_adyacencia.get((v, u), "-")) for u in vertices]
+            fila = []
+            for u in vertices:
+                if (v, u) in self.grafo.matriz_adyacencia:
+                    fila.append(str(self.grafo.matriz_adyacencia[(v, u)]))
+                else:
+                    fila.append("-")
             print(f"{v}: {' '.join(fila)}")
 
 if __name__ == "__main__":
     grafo = GrafoLogistica()
     programa = ProgramaLogistica(grafo)
-    
     texto_grafo = """
-    Ciudad1,Ciudad2,tiempoNormal,tiempoLluvia,tiempoNieve,tiempoTormenta
-    BuenosAires,SaoPaulo,10,15,20,50
-    BuenosAires,Lima,15,20,30,70
-    Lima,Quito,10,12,15,20
-    """
-    
+Ciudad1,Ciudad2
+BuenosAires,SaoPaulo,10,15,20,50
+BuenosAires,Lima,15,20,30,70
+Lima,Quito,10,12,15,20
+"""
     programa.cargar_grafo_desde_texto(texto_grafo)
-
-    print("Matriz de adyacencia:")
     programa.mostrar_matriz_adyacencia()
-
     ciudad_origen = "BuenosAires"
     ciudad_destino = "Quito"
     programa.mostrar_ruta_mas_corta(ciudad_origen, ciudad_destino)
