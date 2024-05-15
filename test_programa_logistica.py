@@ -3,12 +3,31 @@ import unittest
 from ht10 import GrafoLogistica, ProgramaLogistica
 
 
+class TestGrafoLogistica(unittest.TestCase):
+    def setUp(self):
+        self.grafo = GrafoLogistica()
+
+    def test_agregar_conexion(self):
+        self.grafo.agregar_conexion('BuenosAires', 'Lima', (10, 20, 30, 40))
+        self.assertIn(('BuenosAires', 'Lima'), self.grafo.matriz_adyacencia)
+        self.assertEqual(self.grafo.matriz_adyacencia[('BuenosAires', 'Lima')], (10, 20, 30, 40))
+
+    def test_quitar_conexion(self):
+        self.grafo.agregar_conexion('BuenosAires', 'Lima', (10, 20, 30, 40))
+        self.grafo.quitar_conexion('BuenosAires', 'Lima')
+        self.assertNotIn(('BuenosAires', 'Lima'), self.grafo.matriz_adyacencia)
+
+    def test_cambiar_clima(self):
+        self.grafo.agregar_conexion('BuenosAires', 'Lima', (10, 20, 30, 40))
+        self.grafo.cambiar_clima('BuenosAires', 'Lima', 2)
+        self.assertEqual(self.grafo.matriz_adyacencia[('BuenosAires', 'Lima')], (10, 20, 2, 40))
+
+
 class TestProgramaLogistica(unittest.TestCase):
     def setUp(self):
         self.grafo = GrafoLogistica()
         self.programa = ProgramaLogistica(self.grafo)
         texto_grafo = """
-        Ciudad1,Ciudad2,tiempoNormal,tiempoLluvia,tiempoNieve,tiempoTormenta
         BuenosAires,SaoPaulo,10,15,20,50
         BuenosAires,Lima,15,20,30,70
         Lima,Quito,10,12,15,20
